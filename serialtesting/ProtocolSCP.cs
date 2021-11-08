@@ -214,10 +214,17 @@ namespace SCP
         }
         public string ReadDPAna(byte[] buffer, byte[] data)
         {
-            data[0] = buffer[13]; // HB Wert
-            data[1] = buffer[14]; // LB Wert
-            string zur = ByteArrayToString(data);
-            return zur;
+			string zuri = ByteArrayToString(buffer);
+			StringBuilder builder = new StringBuilder(zuri);
+			builder.Replace("1B", "");
+			zuri = builder.ToString();
+			byte[] neuBuf = new byte[20];
+
+			data[0] = neuBuf[13]; // HB Wert
+            data[1] = neuBuf[14]; // LB Wert
+
+            string zur = ByteArrayToString(data);	
+			return zur;
         }
         //-------------------------------------------------------------------------------------
         public string WriteDPTrans(uint cpuid, uint startdp, byte bitmap, uint value)
@@ -295,7 +302,7 @@ namespace SCP
                 hex.AppendFormat("{0:x2}", b);
             return hex.ToString();
         }
-    }
+	}
 }
 /*
  void SendSCPStulzCom (task_data_struct *task_data, unsigned char num)
