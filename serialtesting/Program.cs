@@ -7,7 +7,7 @@ using coptions;
 using OptionAttribute = coptions.OptionAttribute;
 
 
-[ApplicationInfo(Help = "Example: serialtesting.exe -c com8 -a 1 -f 1 -s 1174")]
+[ApplicationInfo(Help = "Example: programname.exe -c com8 -a 1 -f 1 -s 1174")]
 public class Options
 {
     //	[Flag('s', "silent", Help = "Produce no output.")]
@@ -88,8 +88,10 @@ public class Options
         }
     }
     private string _dpvalue;
-}
 
+    [Flag('d', "debug", Help = "Debug additional info")]
+    public bool bDebug;
+}
 
 namespace GodSharp.NetCore.ConsoleSample
 {
@@ -117,6 +119,11 @@ namespace GodSharp.NetCore.ConsoleSample
 
                     string test = SCP.ProtocolSCP.ByteArrayToString(bytes);
                     //                    Console.WriteLine("receive test:" + test);
+                    if (opt.bDebug)
+                    {
+                        string hexString = SCP.ProtocolSCP.ByteArrayToString(bytes);
+                        Console.WriteLine("Debug response: "+hexString);
+                    }
                     if (opt.Mfunction == "1")
                     {
                         byte[] werte = new byte[2]; 
