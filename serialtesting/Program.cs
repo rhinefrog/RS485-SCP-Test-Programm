@@ -7,7 +7,7 @@ using coptions;
 using OptionAttribute = coptions.OptionAttribute;
 
 
-[ApplicationInfo(Help = "Example: programname.exe -c com8 -a 1 -f 1 -s 1174")]
+[ApplicationInfo(Help = "Example: programname.exe -d com8 -c 1 -v 1")]
 public class Options
 {
     //	[Flag('s', "silent", Help = "Produce no output.")]
@@ -26,7 +26,7 @@ public class Options
     //	}
     //	private string _name;
 
-    [Option('c', "comport", "COMPORT", Help = "Comport Windows \"COM1\" or Linux \"/dev/ttySx\" ")]
+    [Option('d', "comport", "COMPORT", Help = "Comport Windows \"COM1\" or Linux \"/dev/ttySx\" ")]
     public string Comport
     {
         get { return _comport; }
@@ -39,58 +39,55 @@ public class Options
     }
     private string _comport;
 
-    [Option('f', "function", "FUNCTION", Help = "ReadAnalog = 1 | WriteAnalog = 2 | ReadDigital = 3 | WriteDigital = 4 ")]
-    public string Mfunction
+    [Option('c', "commands", "CMD", Help = "STR | DMS | ERR ... ")]
+    public string cmd
     {
-        get { return _mfunction; }
+        get { return _cmd; }
         set
         {
             if (String.IsNullOrWhiteSpace(value))
-                throw new InvalidOptionValueException("Comport must not be blank");
-            _mfunction = value;
+                throw new InvalidOptionValueException("Command must not be blank");
+            _cmd = value;
         }
     }
-    private string _mfunction;
+    private string _cmd;
 
-    [Option('a', "address", "DEVICE_ID", Help = "Choose a device address ")]
-    public int Address
+    [Option('a', "address", "ADR", Help = "Address ")]
+    public string address
     {
         get { return _address; }
         set
         {
+            if (String.IsNullOrWhiteSpace(value))
+                throw new InvalidOptionValueException("Command must not be blank");
             _address = value;
         }
     }
-    private int _address;
+    private string _address;
 
-    [Option('s', "saddress", "STARTADDRESS", Help = "Choose a start address ")]
-    public string Saddress
+    [Option('m', "moduleno", "ModuleNo", Help = "Module Number")]
+    public string moduleno
     {
-        get { return _saddress; }
+        get { return _moduleno; }
         set
         {
             if (String.IsNullOrWhiteSpace(value))
-                throw new InvalidOptionValueException("Comport must not be blank");
-            _saddress = value;
+                throw new InvalidOptionValueException("Command must not be blank");
+            _moduleno = value;
         }
     }
-    private string _saddress;
+    private string _moduleno;
 
-    [Option('w', "write", "WRITE", Help = "Value write")]
-    public string DPValue
+    [Option('v', "value", "VALUE", Help = "Value")]
+    public string Svalue
     {
-        get { return _dpvalue; }
+        get { return _svalue; }
         set
         {
-            if (String.IsNullOrWhiteSpace(value))
-                throw new InvalidOptionValueException("Comport must not be blank");
-            _dpvalue = value;
+            _svalue = value;
         }
     }
-    private string _dpvalue;
-
-    [Flag('d', "debug", Help = "Debug additional info")]
-    public bool bDebug;
+    private string _svalue;
 }
 
 namespace GodSharp.NetCore.ConsoleSample
@@ -101,151 +98,103 @@ namespace GodSharp.NetCore.ConsoleSample
         static int Main(string[] args)
         {
             try {
-                SCP.ProtocolSCP scp = new SCP.ProtocolSCP();
-//                SDC.ProtocolSDC sdc = new SDC.ProtocolSDC();
+                   HOYA.hoya hoya = new HOYA.hoya();
 
-                uint slaveAddress = 1;
-                Options opt = CliParser.Parse<Options>(args);
-                slaveAddress = Convert.ToUInt16(opt.Address);
+                    Options opt = CliParser.Parse<Options>(args);
 
-                GodSerialPort gsp = new GodSerialPort(opt.Comport, 9600, 0, 8, 1, 0);
+//            string test = hoya.RequestData("1", "4", "STR");
+                    GodSerialPort gsp = new GodSerialPort(opt.Comport, 38400, 0, 8, 1, 0);
 
-            gsp.UseDataReceived(true, (sp, bytes) =>
-            {
-                if (bytes != null && bytes.Length > 0)
-                {
-                    //                    string buffer = string.Join(" ", bytes);
-                    //                    Console.WriteLine("receive data:" + buffer);
+                    gsp.UseDataReceived(true, (sp, bytes) =>
+                        {
+                            if (bytes != null && bytes.Length > 0)
+                            {
+                                string buffer = string.Join(" ", bytes);
+                                Console.WriteLine("receive data:" + buffer);
 
-                    string test = SCP.ProtocolSCP.ByteArrayToString(bytes);
-                    //                    Console.WriteLine("receive test:" + test);
-                    if (opt.bDebug)
-                    {
-                        string hexString = SCP.ProtocolSCP.ByteArrayToString(bytes);
-                        Console.WriteLine("Debug response: "+hexString);
-                    }
-                    if (opt.Mfunction == "1")
-                    {
-                        byte[] werte = new byte[2]; 
-                        scp.ReadDPAna(bytes, werte);
-                        string hexString = SCP.ProtocolSCP.ByteArrayToString(werte);
-                        //                    Console.WriteLine("Data: " + hexString);
-                        int num = Int32.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
-                        Console.WriteLine(num.ToString()); // Wert 
-                    }
-                    if (opt.Mfunction == "3")
-                    {
-                        byte[] werte = new byte[1]; 
-                        scp.ReadDPDig(bytes, werte);
-                        string hexString = SCP.ProtocolSCP.ByteArrayToString(werte);
-                        //                    Console.WriteLine("Data: " + hexString);
-                        int num = Int32.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
-                        Console.WriteLine(num.ToString()); // Wert 
-                    }
-                }
-            });
+            //                    string test = HOYA.hoya.ByteArrayToString(bytes);
+            //                    Console.WriteLine("receive test:" + test);
+            /*                    if (opt.bDebug)
+                                {
+                                    string hexString = SCP.hoya.ByteArrayToString(bytes);
+                                    Console.WriteLine("Debug response: "+hexString);
+                                }
+                                if (opt.Mfunction == "1")
+                                {
+                                    byte[] werte = new byte[2]; 
+                                    scp.ReadDPAna(bytes, werte);
+                                    string hexString = SCP.hoya.ByteArrayToString(werte);
+                                    //                    Console.WriteLine("Data: " + hexString);
+                                    int num = Int32.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
+                                    Console.WriteLine(num.ToString()); // Wert 
+                                }
+                                if (opt.Mfunction == "3")
+                                {
+                                    byte[] werte = new byte[1]; 
+                                    scp.ReadDPDig(bytes, werte);
+                                    string hexString = SCP.hoya.ByteArrayToString(werte);
+                                    //                    Console.WriteLine("Data: " + hexString);
+                                    int num = Int32.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
+                                    Console.WriteLine(num.ToString()); // Wert 
+                                }*/
+                            }
+                        });
 
-            bool flag = gsp.Open();
+                    bool flag = gsp.Open();
 
-            if (!flag)
-            {
-                Exit();
-            }
+                   if (!flag)
+                   {
+                        //Exit();
+                   }
 
             //SerialValueTest();
-            if (opt.Mfunction == "1")
-            {
-                    // scp send read request
-                    uint adresse = Convert.ToUInt16(opt.Address);
-                    uint dp = Convert.ToUInt16(opt.Saddress);
-                    string dd = scp.ReadDP(adresse, dp);
-                    gsp.WriteHexString(dd);
+                   if (opt.cmd == "STR")
+                        {
+                                //  send read request
+                                string dd = hoya.RequestData(opt.address, opt.moduleno, opt.cmd); 
+                                gsp.WriteHexString(dd);
 
-                    System.Threading.Thread.Sleep(150);
-            }
-            if (opt.Mfunction == "2")
-            {
-                    // scp send write request
-                    uint adresse = Convert.ToUInt16(opt.Address);
-                    uint dp = Convert.ToUInt16(opt.Saddress);
-                    uint val = Convert.ToUInt16(opt.DPValue);
-                    byte bitmap = 0x01;
-                    string dd = scp.WriteDPTrans(adresse, dp, bitmap, val);
-                    gsp.WriteHexString(dd);
+                                System.Threading.Thread.Sleep(150);
+                        }
+                   if (opt.cmd == "DMS")
+                        {
+                            //  send read request
+                            string dd = hoya.RequestData(opt.address, opt.moduleno, opt.cmd);
+                            gsp.WriteHexString(dd);
 
-                    System.Threading.Thread.Sleep(150);
-            }
-            if (opt.Mfunction == "3")
-            {
-                    // scp send read request
-                    uint adresse = Convert.ToUInt16(opt.Address);
-                    uint dp = Convert.ToUInt16(opt.Saddress);
-                    string dd = scp.ReadDP(adresse, dp);
-                    gsp.WriteHexString(dd);
+                            System.Threading.Thread.Sleep(150);
+                        }
 
-                    System.Threading.Thread.Sleep(150);
-            }
-            if (opt.Mfunction == "4")
-            {
-                    // scp send write request
-                    uint adresse = Convert.ToUInt16(opt.Address);
-                    uint dp = Convert.ToUInt16(opt.Saddress);
-                    uint val = Convert.ToUInt16(opt.DPValue);
-                    byte bitmap = 0x01;
-                    string dd = scp.WriteDPTrans(adresse, dp, bitmap, val);
-                    gsp.WriteHexString(dd);
-
-                    System.Threading.Thread.Sleep(150);
-            }
-
-            gsp.Close();
-
-            static void Exit()
-            {
-                Console.WriteLine("press any key to quit.");
-                Console.ReadKey();
-                Environment.Exit(0);
-            }
-            static void SerialValueTest()
-            {
-                System.IO.Ports.SerialPort port = new System.IO.Ports.SerialPort();
-                Console.WriteLine("PortName:" + port.PortName);
-                Console.WriteLine("BaudRate:" + port.BaudRate);
-                Console.WriteLine("Parity:" + port.Parity);
-                Console.WriteLine("DataBits:" + port.DataBits);
-                Console.WriteLine("StopBits:" + port.StopBits);
-                Console.WriteLine("Handshake:" + port.Handshake);
-                Console.WriteLine("ReadBufferSize:" + port.ReadBufferSize);
-                Console.WriteLine("WriteBufferSize:" + port.WriteBufferSize);
-            }
+                gsp.Close();
                 return 0;
             }
-            catch (CliParserExit)
-            {
-                // --help
-                return 0;
+                        catch (CliParserExit)
+                        {
+                            // --help
+                            return 0;
 
-            }
-            catch (Exception e)
-            {
-                // unknown options etc...
-                Console.Error.WriteLine("Fatal Error: " + e.Message);
-                return 1;
-            }
+                        }
+                        catch (Exception e)
+                        {
+                            // unknown options etc...
+                            Console.Error.WriteLine("Fatal Error: " + e.Message);
+                            return 1;
+                        }
+
             string ToHexString(float f)
-                {
-                    var bytes = BitConverter.GetBytes(f);
-                    var i = BitConverter.ToInt32(bytes, 0);
-                    return "0x" + i.ToString("X8");
-                }
-
-                float FromHexString(string s)
-                {
-                    var i = Convert.ToInt32(s, 16);
-                    var bytes = BitConverter.GetBytes(i);
-                    return BitConverter.ToSingle(bytes, 0);
-                }
+            {
+                var bytes = BitConverter.GetBytes(f);
+                var i = BitConverter.ToInt32(bytes, 0);
+                return "0x" + i.ToString("X8");
             }
+
+            float FromHexString(string s)
+            {
+                var i = Convert.ToInt32(s, 16);
+                var bytes = BitConverter.GetBytes(i);
+                return BitConverter.ToSingle(bytes, 0);
+            }
+        }
     }
 }
                     // IEEE754 it works
