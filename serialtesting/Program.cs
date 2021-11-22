@@ -6,11 +6,24 @@ using coptions;
 using OptionAttribute = coptions.OptionAttribute;
 using System.Text;
 
-[ApplicationInfo(Help = "Example: programname.exe -d com8 -c DRS -a 1 -m 3 -v 1")]
+[ApplicationInfo(Help = "Example: programname.exe -c com8 -k DRS -a 1 -m 3 -v 1")]
 public class Options
 {
 
-    [Option('d', "comport", "COMPORT", Help = "Comport Windows \"COM1\" or Linux \"/dev/ttySx\" ")]
+    [Option('b', "baudrate", "BAUDRATE", Help = "Baudrate 38400 / 115200 ")]
+    public int baudrate
+    {
+        get { return _baudrate; }
+        set
+        {
+            if (value != 38400 && value != 115200)
+                value = 38400;
+            _baudrate = value;
+        }
+    }
+    private int _baudrate;
+
+    [Option('c', "comport", "COMPORT", Help = "Comport Windows \"COM1\" or Linux \"/dev/ttySx\" ")]
     public string Comport
     {
         get { return _comport; }
@@ -23,7 +36,7 @@ public class Options
     }
     private string _comport;
 
-    [Option('c', "command", "CMD", Help = "Command STR/DRS/DMS/BMS ... ")]
+    [Option('k', "command", "CMD", Help = "Command STR/DRS/DMS/BMS ... ")]
     public string cmd
     {
         get { return _cmd; }
@@ -49,7 +62,7 @@ public class Options
     }
     private string _address;
 
-    [Option('m', "moduleno", "ModuleNo", Help = "Module Number")]
+    [Option('m', "moduleno", "ModuleNo", Help = "Module Number LS/B 240 -> 3 Modules")]
     public string moduleno
     {
         get { return _moduleno; }
@@ -88,7 +101,7 @@ namespace GodSharp.NetCore.ConsoleSample
                 Options opt = CliParser.Parse<Options>(args);
 
                 //                GodSerialPort gsp = new GodSerialPort(opt.Comport, 115200, 0, 8, 1, 0);
-                GodSerialPort gsp = new GodSerialPort(opt.Comport, 38400, 0, 8, 1, 0);
+                GodSerialPort gsp = new GodSerialPort(opt.Comport, opt.baudrate, 0, 8, 1, 0);
 
                 gsp.UseDataReceived(true, (sp, bytes) =>
                 {
@@ -110,16 +123,28 @@ namespace GodSharp.NetCore.ConsoleSample
                 {
                     Exit();
                 }
-
-                if (opt.cmd == "STR")
+                if (opt.cmd == "LVS")
                 {
-                    string dd = hoya.RequestSTR(opt.address, opt.moduleno, opt.value);
+                    string dd = hoya.RequestLVS(opt.address, opt.moduleno, opt.value);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "UVE")
+                {
+                    string dd = hoya.RequestUVE(opt.address, opt.moduleno, opt.value);
                     gsp.WriteHexString(dd);
                     System.Threading.Thread.Sleep(150);
                 }
                 if (opt.cmd == "DMS")
                 {
                     string dd = hoya.RequestDMS(opt.address, opt.moduleno, opt.value);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+
+                if (opt.cmd == "STR")
+                {
+                    string dd = hoya.RequestSTR(opt.address, opt.moduleno);
                     gsp.WriteHexString(dd);
                     System.Threading.Thread.Sleep(150);
                 }
@@ -132,6 +157,66 @@ namespace GodSharp.NetCore.ConsoleSample
                 if (opt.cmd == "ADS")
                 {
                     string dd = hoya.RequestADS(opt.address, opt.moduleno, opt.value);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "ECS")
+                {
+                    string dd = hoya.RequestECS(opt.address, opt.moduleno, opt.value);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "LVR")
+                {
+                    string dd = hoya.RequestLVR(opt.address, opt.moduleno);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "ERR")
+                {
+                    string dd = hoya.RequestERR(opt.address, opt.moduleno);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "DMR")
+                {
+                    string dd = hoya.RequestDMR(opt.address, opt.moduleno);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "LGR")
+                {
+                    string dd = hoya.RequestLGR(opt.address, opt.moduleno, opt.value);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "LSR")
+                {
+                    string dd = hoya.RequestLSR(opt.address, opt.moduleno);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "TSR")
+                {
+                    string dd = hoya.RequestTSR(opt.address, opt.moduleno);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "THR")
+                {
+                    string dd = hoya.RequestTHR(opt.address, opt.moduleno);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "BMR")
+                {
+                    string dd = hoya.RequestBMR(opt.address, opt.moduleno);
+                    gsp.WriteHexString(dd);
+                    System.Threading.Thread.Sleep(150);
+                }
+                if (opt.cmd == "SVR")
+                {
+                    string dd = hoya.RequestSVR(opt.address, opt.moduleno);
                     gsp.WriteHexString(dd);
                     System.Threading.Thread.Sleep(150);
                 }
